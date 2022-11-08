@@ -51,7 +51,7 @@ def connect():
 
 def get_qep(query):
     cursor = connect()
-    print("Executing SQL query (QEP)")
+    print("Executing SQL query (QEP):", query)
     cursor.execute("EXPLAIN (FORMAT JSON, ANALYZE) " + query)
 
     print("SQL query executed")
