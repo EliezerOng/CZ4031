@@ -143,3 +143,77 @@ var = {'Plan': {'Node Type': 'Sort', 'Parallel Aware': False, 'Async Capable': F
                              'Rows Removed by Filter': 0, 'Workers': []}]}]}]}]}]}]},
        'Settings': {'enable_bitmapscan': 'off', 'enable_gathermerge': 'off', 'enable_hashjoin': 'off'},
        'Planning Time': 1.798, 'Triggers': [], 'Execution Time': 98.88}
+
+var = [('Sort  (cost=46225.42..46225.42 rows=1 width=36) (actual time=71.699..98.168 rows=0 loops=1)',),
+       ('  Output: partsupp.ps_partkey, (sum((partsupp.ps_supplycost * (partsupp.ps_availqty)::numeric)))',),
+       ('  Sort Key: (sum((partsupp.ps_supplycost * (partsupp.ps_availqty)::numeric))) DESC',),
+       ('  Sort Method: quicksort  Memory: 25kB',), ('  InitPlan 1 (returns $1)',),
+       ('    ->  Finalize Aggregate  (cost=23430.72..23430.73 rows=1 width=32) (never executed)',),
+       ('          Output: (sum((partsupp_1.ps_supplycost * (partsupp_1.ps_availqty)::numeric)) * 0.0001000000)',),
+       ('          ->  Gather  (cost=23430.49..23430.70 rows=2 width=32) (never executed)',),
+       ('                Output: (PARTIAL sum((partsupp_1.ps_supplycost * (partsupp_1.ps_availqty)::numeric)))',),
+       ('                Workers Planned: 2',), ('                Workers Launched: 0',),
+       ('                ->  Partial Aggregate  (cost=22430.49..22430.50 rows=1 width=32) (never executed)',),
+       ('                      Output: PARTIAL sum((partsupp_1.ps_supplycost * (partsupp_1.ps_availqty)::numeric))',),
+       ('                      ->  Hash Join  (cost=361.78..22415.78 rows=1961 width=10) (never executed)',),
+       ('                            Output: partsupp_1.ps_supplycost, partsupp_1.ps_availqty',),
+       ('                            Hash Cond: (partsupp_1.ps_suppkey = supplier_1.s_suppkey)',), (
+       '                            ->  Parallel Seq Scan on public.partsupp partsupp_1  (cost=0.00..20784.33 rows=333333 width=14) (never executed)',),
+       (
+       '                                  Output: partsupp_1.ps_partkey, partsupp_1.ps_suppkey, partsupp_1.ps_availqty, partsupp_1.ps_supplycost, partsupp_1.ps_comment',),
+       ('                            ->  Hash  (cost=361.04..361.04 rows=59 width=4) (never executed)',),
+       ('                                  Output: supplier_1.s_suppkey',),
+       ('                                  ->  Hash Join  (cost=12.14..361.04 rows=59 width=4) (never executed)',),
+       ('                                        Output: supplier_1.s_suppkey',),
+       ('                                        Inner Unique: true',),
+       ('                                        Hash Cond: (supplier_1.s_nationkey = nation_1.n_nationkey)',), (
+       '                                        ->  Seq Scan on public.supplier supplier_1  (cost=0.00..322.00 rows=10000 width=8) (never executed)',),
+       (
+       '                                              Output: supplier_1.s_suppkey, supplier_1.s_name, supplier_1.s_address, supplier_1.s_nationkey, supplier_1.s_phone, supplier_1.s_acctbal, supplier_1.s_comment',),
+       ('                                        ->  Hash  (cost=12.13..12.13 rows=1 width=4) (never executed)',),
+       ('                                              Output: nation_1.n_nationkey',), (
+       '                                              ->  Seq Scan on public.nation nation_1  (cost=0.00..12.13 rows=1 width=4) (never executed)',),
+       ('                                                    Output: nation_1.n_nationkey',),
+       ("                                                    Filter: (nation_1.n_name = 'GERMANY'::bpchar)",),
+       ('  ->  GroupAggregate  (cost=22794.65..22794.68 rows=1 width=36) (actual time=71.695..98.160 rows=0 loops=1)',),
+       ('        Output: partsupp.ps_partkey, sum((partsupp.ps_supplycost * (partsupp.ps_availqty)::numeric))',),
+       ('        Group Key: partsupp.ps_partkey',),
+       ('        Filter: (sum((partsupp.ps_supplycost * (partsupp.ps_availqty)::numeric)) > $1)',),
+       ('        ->  Sort  (cost=22794.65..22794.65 rows=1 width=14) (actual time=71.694..98.159 rows=0 loops=1)',),
+       ('              Output: partsupp.ps_partkey, partsupp.ps_supplycost, partsupp.ps_availqty',),
+       ('              Sort Key: partsupp.ps_partkey',), ('              Sort Method: quicksort  Memory: 25kB',), (
+       '              ->  Gather  (cost=1000.44..22794.64 rows=1 width=14) (actual time=71.690..98.154 rows=0 loops=1)',),
+       ('                    Output: partsupp.ps_partkey, partsupp.ps_supplycost, partsupp.ps_availqty',),
+       ('                    Workers Planned: 2',), ('                    Workers Launched: 2',), (
+       '                    ->  Nested Loop  (cost=0.44..21794.54 rows=1 width=14) (actual time=51.109..51.110 rows=0 loops=3)',),
+       ('                          Output: partsupp.ps_partkey, partsupp.ps_supplycost, partsupp.ps_availqty',),
+       ('                          Inner Unique: true',),
+       ('                          Worker 0:  actual time=43.530..43.532 rows=0 loops=1',),
+       ('                          Worker 1:  actual time=38.780..38.781 rows=0 loops=1',), (
+       '                          ->  Nested Loop  (cost=0.29..21789.43 rows=33 width=18) (actual time=51.108..51.109 rows=0 loops=3)',),
+       (
+       '                                Output: partsupp.ps_partkey, partsupp.ps_supplycost, partsupp.ps_availqty, supplier.s_nationkey',),
+       ('                                Inner Unique: true',),
+       ('                                Worker 0:  actual time=43.530..43.530 rows=0 loops=1',),
+       ('                                Worker 1:  actual time=38.779..38.780 rows=0 loops=1',), (
+       '                                ->  Parallel Seq Scan on public.partsupp  (cost=0.00..21617.67 rows=33 width=18) (actual time=51.108..51.108 rows=0 loops=3)',),
+       (
+       '                                      Output: partsupp.ps_partkey, partsupp.ps_suppkey, partsupp.ps_availqty, partsupp.ps_supplycost, partsupp.ps_comment',),
+       ("                                      Filter: (partsupp.ps_supplycost > '10000'::numeric)",),
+       ('                                      Rows Removed by Filter: 266667',),
+       ('                                      Worker 0:  actual time=43.529..43.529 rows=0 loops=1',),
+       ('                                      Worker 1:  actual time=38.779..38.779 rows=0 loops=1',), (
+       '                                ->  Index Scan using supplier_pkey on public.supplier  (cost=0.29..5.21 rows=1 width=8) (never executed)',),
+       (
+       '                                      Output: supplier.s_suppkey, supplier.s_name, supplier.s_address, supplier.s_nationkey, supplier.s_phone, supplier.s_acctbal, supplier.s_comment',),
+       ('                                      Index Cond: (supplier.s_suppkey = partsupp.ps_suppkey)',),
+       ("                                      Filter: (supplier.s_acctbal < '10000'::numeric)",),
+       ('                          ->  Memoize  (cost=0.15..0.18 rows=1 width=4) (never executed)',),
+       ('                                Output: nation.n_nationkey',),
+       ('                                Cache Key: supplier.s_nationkey',),
+       ('                                Cache Mode: logical',), (
+       '                                ->  Index Scan using nation_pkey on public.nation  (cost=0.14..0.17 rows=1 width=4) (never executed)',),
+       ('                                      Output: nation.n_nationkey',),
+       ('                                      Index Cond: (nation.n_nationkey = supplier.s_nationkey)',),
+       ("                                      Filter: (nation.n_name = 'GERMANY'::bpchar)",),
+       ('Planning Time: 0.457 ms',), ('Execution Time: 98.234 ms',)]
