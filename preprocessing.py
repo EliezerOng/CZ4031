@@ -1,5 +1,4 @@
 import psycopg2
-import json
 
 DEFAULT_PARAMS = {
 
@@ -27,13 +26,46 @@ DEFAULT_PARAMS = {
 }
 
 
+class Node:
+    def __init__(self, plan_dict):
+        self.op = plan_dict['Node Type']
+        self.cost = plan_dict['Total Cost']
+        self.output = plan_dict['Output']
+        self.plans = plan_dict['Plans']
+        self.children = self.set_children()
+
+    def get_children(self):
+        return self.children
+
+    def set_children(self):
+        nodes_list = []
+        for plan in self.plans:
+            child_node = Node(plan)
+            nodes_list.append(child_node)
+        return nodes_list
+
+    def get_operation(self):
+        return self.op
+
+    def get_cost(self):
+        return self.cost
+
+    def get_output(self):
+        return self.output
+
+
+def build_tree(plan):
+    return Node(plan)
+
+
 def get_settings(params):
+    # print(params)
     settings = ""
     for key, value in params.items():
         default = DEFAULT_PARAMS.get(key)
         if value != default:
             settings += "SET " + key + " = '" + value + "';\n"
-    # param_str += "SELECT name, setting FROM pg_settings WHERE name LIKE '%enable%';"
+    # print("settings =", settings)
     return settings
 
 
@@ -52,24 +84,30 @@ def connect():
 def get_qep(query):
     cursor = connect()
     print("Executing SQL query (QEP):", query)
-    cursor.execute("EXPLAIN (FORMAT JSON, ANALYZE) " + query)
+    cursor.execute("EXPLAIN (FORMAT JSON, ANALYZE, VERBOSE) " + query)
 
     print("SQL query executed")
+    qep_json = cursor.fetchone()
 
+    cursor.execute("EXPLAIN ANALYZE VERBOSE " + query)
     qep = cursor.fetchall()
-    print(qep)
+
+    print(qep_json[0][0])
     cursor.close()
-    return json.dumps(qep)
+    return qep, qep_json[0][0]
 
 
 def get_aqp(params, query):
     cursor = connect()
     print("Executing SQL query (AQP)")
-    cursor.execute(get_settings(params) + "EXPLAIN ANALYZE SETTINGS FORMAT JSON " + query)
+    cursor.execute(get_settings(params) + "EXPLAIN (SETTINGS ON, FORMAT JSON, ANALYZE, VERBOSE) " + query)
 
     print("SQL query executed")
+    aqp_json = cursor.fetchone()
 
+    cursor.execute(get_settings(params) + "EXPLAIN (SETTINGS ON, ANALYZE, VERBOSE) " + query)
     aqp = cursor.fetchall()
-    print(aqp)
+
+    print(aqp_json[0][0])
     cursor.close()
-    return json.dumps(aqp)
+    return aqp, aqp_json[0][0]

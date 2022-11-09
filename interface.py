@@ -3,21 +3,20 @@ from tkinter import ttk, TclError
 import preprocessing as pre
 
 plans = {}
-input_textbox = None
-visualizer_box = None
-settings = pre.DEFAULT_PARAMS
+input_textbox = qep_box = aqp_box = None
+settings = pre.DEFAULT_PARAMS.copy()
 
 
 def create_input_frame(container):
-    frame = tk.Frame(container, width=400, height=180)
+    frame = tk.Frame(container)
     # frame.pack()
     # frame.pack_propagate(0)
 
     # Enter Query
     query_label = tk.Label(frame, text='Enter Query Here: ')
-    query_label.grid(column=0, row=0, pady=5, sticky=tk.W)
-    query_text = tk.Text(frame, width=40, height=15)
-    query_text.grid(column=0, row=1)
+    query_label.grid(row=0, pady=5, sticky='w')
+    query_text = tk.Text(frame, width=100, height=15)
+    query_text.grid(row=1)
 
     # for widget in frame.winfo_children():
     #     widget.grid(padx=5, pady=5)
@@ -25,66 +24,76 @@ def create_input_frame(container):
     return frame, query_text
 
 
-def create_button_frame(container):
-    frame = ttk.Frame(container)
-
-    ttk.Button(frame, text='Query Plan', command=lambda: get_plans()).grid(pady=5)
-
-    # for widget in frame.winfo_children():
-    #     widget.grid(padx=5, pady=5)
-
-    return frame
+def get_value(initial):
+    if initial == "ON":
+        return 1
+    else:
+        return 0
 
 
-def create_settings_frame(container):
-    frame = ttk.Frame(container, width=400, height=180)
+def create_buttons_frame(container):
+    frame = tk.Frame(container)
 
     settings_label = tk.Label(frame, text='Alternative Plan Configuration')
-    settings_label.grid(column=0, row=0, pady=5, sticky=tk.W)
+    settings_label.grid(row=0, pady=5, sticky='w')
 
-    # options_frame = ttk.Frame(frame, width=40, height=15)
-
-    def get_value(initial):
-        if initial == "ON":
-            return 1
-        else:
-            return 0
-
+    options_frame = tk.Frame(frame)
+    options_frame.grid(row=1)
     row_num = 0
     for key, value in pre.DEFAULT_PARAMS.items():
-        ttk.Checkbutton(frame,
-                        text=key[7:],
-                        variable=tk.IntVar(value=get_value(value)),
-                        command=lambda: update_settings(key),
-                        onvalue="ON",
-                        offvalue="OFF").grid(row=row_num % 10 + 1, column=row_num // 10, sticky='w')
+        checkbox = ttk.Checkbutton(options_frame,
+                                   text=key[7:],
+                                   variable=tk.IntVar(),
+                                   command=lambda x=key: update_settings(x),
+                                   onvalue="ON",
+                                   offvalue="OFF"
+                                   )
+        checkbox.grid(row=row_num % 10, column=row_num // 10, sticky='w')
+        checkbox.state(['!alternate'])
+        if get_value(value) == 1:
+            checkbox.state(['selected'])
         row_num += 1
+
+    ttk.Button(frame, text='Query Plan', command=lambda: get_plans(), width=40).grid(row=3, pady=5)
 
     return frame
 
 
-def create_visualizer_frame(container):
-    frame = tk.Frame(container, width=400, height=180)
+def create_qep_frame(container):
+    frame = tk.Frame(container)
 
     # Enter Query
-    visualizer_label = tk.Label(frame, text='Showing plan #')  # TODO: Add dropdown to select between different plans
+    qep_label = tk.Label(frame, text='Query Execution Plan')  # TODO: Add dropdown to select between different plans
     # .grid(column=0, row=0)
-    visualizer_label.grid(column=0, row=0, pady=5, sticky=tk.W)
-    visualizer_text = tk.Text(frame, width=40, height=10)
-    visualizer_text.grid(column=0, row=1)
+    qep_label.grid(row=0, pady=5, sticky='w')
+    qep_text = tk.Text(frame, width=66, height=20)
+    qep_text.grid(row=1)
 
-    return frame, visualizer_text
+    return frame, qep_text
+
+
+def create_aqp_frame(container):
+    frame = tk.Frame(container)
+
+    # Enter Query
+    aqp_label = tk.Label(frame, text='Alternative Query Plan #')  # TODO: Add dropdown to select between different plans
+    # .grid(column=0, row=0)
+    aqp_label.grid(row=0, pady=5, sticky='w')
+    aqp_text = tk.Text(frame, width=66, height=20)
+    aqp_text.grid(row=1)
+
+    return frame, aqp_text
 
 
 def create_annotation_frame(container):
-    frame = tk.Frame(container, width=400, height=180)
+    frame = tk.Frame(container)
 
     # Enter Query
     annotation_label = tk.Label(frame, text='Annotations')
     # .grid(column=0, row=0)
-    annotation_label.grid(column=0, row=0, pady=5, sticky=tk.W)
-    annotation_text = tk.Text(frame, width=40, height=10)
-    annotation_text.grid(column=0, row=1)
+    annotation_label.grid(row=0, pady=5, sticky='w')
+    annotation_text = tk.Text(frame, width=135)
+    annotation_text.grid(row=1)
 
     return frame
 
@@ -92,10 +101,10 @@ def create_annotation_frame(container):
 def update_settings(key):
     if settings.get(key) == "ON":
         settings.update({key: "OFF"})
-        print(settings.get(key))
+        print(key, ":", settings.get(key))
     else:
         settings.update(({key: "ON"}))
-        print(settings.get(key))
+        print(key, ":", settings.get(key))
 
 
 def get_plans():
@@ -105,17 +114,27 @@ def get_plans():
         print("Empty query")
         return
 
-    qep = pre.get_qep(query)
+    qep, qep_json = pre.get_qep(query)
 
-    # aqp = pre.get_aqp(settings, query)
+    aqp, aqp_json = pre.get_aqp(settings, query)
     # TODO: Retrieve multiple AQPs
 
     plans['QEP'] = qep
-    # plans['AQP'] = aqp
+    plans['AQP'] = aqp
+    plans['QEP_JSON'] = qep_json
+    plans['AQP_JSON'] = aqp_json
 
+    qep_box.delete("1.0", "end")
+    aqp_box.delete("1.0", "end")
     if plans:
-        visualizer_box.insert(tk.END, plans['QEP'])
+        # for line in plans['QEP']:
+        #     qep_box.insert(tk.END, str(line) + '\n')
+        # for line in plans['AQP']:
+        #     aqp_box.insert(tk.END, str(line) + '\n')
+        qep_box.insert(tk.END, plans['QEP'])
+        aqp_box.insert(tk.END, plans['AQP'])
 
+# def draw_tree():
 
 def create_main_window():
     window = tk.Tk()
@@ -124,27 +143,32 @@ def create_main_window():
     # window.geometry('400X400')
 
     # Layout
-    window.columnconfigure(0, weight=1)
-    window.columnconfigure(1, weight=1)
+    # window.columnconfigure(0, weight=1)
+    # window.columnconfigure(1, weight=1)
 
-    global input_textbox, visualizer_box
+    global input_textbox, qep_box, aqp_box
 
-    input_frame, input_textbox = create_input_frame(window)
-    input_frame.grid(column=0, row=0)
+    f1 = tk.Frame(window)
+    f1.grid(row=0)
+    f2 = tk.Frame(window)
+    f2.grid(row=1)
 
-    settings_frame = create_settings_frame(window)
-    settings_frame.grid(column=1, row=0)
+    input_frame, input_textbox = create_input_frame(f1)
+    input_frame.grid(column=0, row=0, padx=10)
 
-    button_frame = create_button_frame(window)
-    button_frame.grid(columnspan=2, row=1)
+    settings_frame = create_buttons_frame(f1)
+    settings_frame.grid(column=1, row=0, padx=10)
 
-    visualizer_frame, visualizer_box = create_visualizer_frame(window)
-    visualizer_frame.grid(column=0, row=2)
+    qep_frame, qep_box = create_qep_frame(f2)
+    qep_frame.grid(column=0, row=0, padx=10)
+
+    aqp_frame, aqp_box = create_aqp_frame(f2)
+    aqp_frame.grid(column=1, row=0, padx=10)
 
     annotation_frame = create_annotation_frame(window)
-    annotation_frame.grid(column=1, row=2)
+    annotation_frame.grid(columnspan=2, row=2)
 
-    # input_textbox.insert(tk.END, "select * from customer where c_custkey < 5")
+    input_textbox.insert(tk.END, "select * from customer where c_custkey < 5")
 
     window.mainloop()
 
