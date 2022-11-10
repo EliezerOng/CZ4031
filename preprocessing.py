@@ -71,7 +71,7 @@ def build_tree(plan):
                 tree.append((parent.op, child.op))
 
     root.set_trace(tree)
-    print(root.trace)
+    # print(root.trace)
 
     return root
 
@@ -112,8 +112,8 @@ def get_qep(query):
     qep = cursor.fetchall()
 
     # print(qep_json[0][0])
-    for line in qep:
-        print(line)
+    # for line in qep:
+    #     print(line)
     cursor.close()
 
     global qep_tree
