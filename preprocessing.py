@@ -34,9 +34,8 @@ class Node:
         self.info = plan_dict
         self.op = plan_dict['Node Type']
         self.cost = plan_dict['Total Cost']
-        self.output = self.set_output()
         self.children = self.set_children()
-        self.trace = None  # For root nodes only. Returns a dictionary of the whole 'tree'
+        self.trace = None
 
     def set_children(self):
         if 'Plans' not in self.info:
@@ -50,14 +49,12 @@ class Node:
             nodes_list.append(child_node)
         return nodes_list
 
-    def set_output(self):
-        if 'Output' not in self.info:
-            return None
-        else:
-            return self.info.get('Output')
-
     def set_trace(self, trace):
         self.trace = trace
+
+    def describe(self):
+        # Call function from annotation.py
+        pass
 
 
 def build_tree(plan):

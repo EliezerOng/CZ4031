@@ -93,7 +93,7 @@ def create_qep_frame(container):
     frame = tk.Frame(container)
 
     # Enter Query
-    qep_label = tk.Label(frame, text='Query Execution Plan')  # TODO: Add dropdown to select between different plans
+    qep_label = tk.Label(frame, text='Query Execution Plan')
     # .grid(column=0, row=0)
     qep_label.grid(row=0, pady=5, sticky='w')
     # qep_text = tk.Text(frame, width=66, height=20)
@@ -113,7 +113,7 @@ def create_aqp_frame(container):
     frame.columnconfigure(1, weight=15)
 
     aqp_id = tk.StringVar()
-    showing = ttk.Combobox(frame, textvariable=aqp_id, width=3)
+    showing = ttk.Combobox(frame, textvariable=aqp_id, width=25)
     showing.grid(row=0, column=1, sticky='w')
     showing['values'] = ['1']
     showing['state'] = 'readonly'
@@ -121,7 +121,7 @@ def create_aqp_frame(container):
     showing.current(0)
 
     # Enter Query
-    aqp_label = tk.Label(frame, text='Alternative Query Plan #')  # TODO: Add dropdown to select between different plans
+    aqp_label = tk.Label(frame, text='Alternative Query Plan #')
     # .grid(column=0, row=0)
     aqp_label.grid(row=0, column=0, pady=5, sticky='w')
     # aqp_text = tk.Text(frame, width=66, height=20)
@@ -186,14 +186,14 @@ def update_treeview(plan):
 
     box.delete(*box.get_children())
 
-    root_id = box.insert('', 'end', text=root.op, values=(root.cost, root.output), open=True)
+    root_id = box.insert('', 'end', text=root.op, values=root.cost, open=True)
     queue = [(root_id, root)]
 
     while queue:
         pid, parent = queue.pop(0)
         if parent.children:
             for child in parent.children:
-                cid = box.insert(pid, 'end', text=child.op, values=(child.cost, child.output), open=True)
+                cid = box.insert(pid, 'end', text=child.op, values=child.cost, open=True)
                 queue.append((cid, child))
 
 
@@ -223,10 +223,15 @@ def get_plans():
 
     if aqp_mode == 'Multiple' and len(aqp) > 0:
         selection['values'] = [str(i + 1) for i in range(len(plans['AQP']))]
+        print("here", aqp)
         update_treeview(aqp[0])
-    else:
+    elif aqp_mode == 'Single':
         selection['values'] = ['1']
         update_treeview('AQP')
+    elif aqp_mode == 'Multiple' and len(aqp) == 0:
+        selection['values'] = ['No distinct plan to display']
+
+    selection.current(0)
 
 
 def create_main_window():
