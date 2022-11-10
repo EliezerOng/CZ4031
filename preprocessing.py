@@ -40,7 +40,7 @@ def get_settings(params):
 # establishing the connection
 def connect():
     conn = psycopg2.connect(
-        database="eugen", user='postgres', password='s9842808i', host='localhost'
+        database="TPC-H", user='postgres', password='admin123', host='localhost'
     )
 
     print("Connecting to sql database...")
