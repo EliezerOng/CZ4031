@@ -120,9 +120,9 @@ def build_annotation(root):
     final = dfs(root, result)
     result.append(final[1])
 
-    # result.append(get_description(root))
+    # print(root.info)
 
-    print(result)
+    return result
 
 
 def dfs(root, result):
@@ -148,9 +148,9 @@ def dfs(root, result):
         tmp_string = "Perform index scan on table {} as {} using index on {}".format(table, alias,
                                                                                      root.info['Index Name'])
         if 'Index Cond' in root.info:
-            tmp_string += ' where {}'.format(root.info['Index Name'])
+            tmp_string += ' where {}'.format(root.info['Index Cond'])
         if 'Filter' in root.info:
-            tmp_string += ' with filter {}'.format(root.info['Index Name'])
+            tmp_string += ' with filter {}'.format(root.info['Filter'])
         return table, tmp_string
 
     elif root.op == 'Index-Only Scan':
@@ -159,9 +159,9 @@ def dfs(root, result):
         tmp_string = "Perform index only scan on table {} as {} using index on {}".format(table, alias,
                                                                                           root.info['Index Name'])
         if 'Index Cond' in root.info:
-            tmp_string += ' where {}'.format(root.info['Index Name'])
+            tmp_string += ' where {}'.format(root.info['Index Cond'])
         if 'Filter' in root.info:
-            tmp_string += ' with filter {}'.format(root.info['Index Name'])
+            tmp_string += ' with filter {}'.format(root.info['Filter'])
         return table, tmp_string
 
     elif root.op == 'Foreign Scan':
@@ -204,19 +204,19 @@ def dfs(root, result):
 
     elif root.op == 'HashAggregate':
         tmp_string = 'Perform hash aggregate operation on table {}'.format(tables[0])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'Aggregate':
         tmp_string = 'Perform aggregate on table {}'.format(tables[0])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'Append':
         tmp_string = 'Append results from table {} to table {}'.format(tables[0], tables[1])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'Gather':
         tmp_string = 'Perform gather operation on table {}'.format(tables[0])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'Gather Merge':
         tmp_string = 'Perform gather merge operation on result of previous operations'
@@ -224,19 +224,19 @@ def dfs(root, result):
 
     elif root.op == 'GroupAggregate':
         tmp_string = 'Perform group aggreagate operation on table {}'.format(tables[0])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'Hash Join':
         tmp_string = "Perform hash join on tables {} and {}".format(tables[0], tables[1])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'Nested Loop':
         tmp_string = 'Perform nested loop join on tables {} and {}'.format(tables[0], tables[1])
         if 'Filter' in root.info:
             tmp_string += ' with filter {}'.format(root.info['Filter'])
         if 'Join Filter' in root.info:
-            tmp_string += 'with condition {}, {}, {}'.format(tables[0], tables[1], root.info['Join Filter'])
-        return tables, tmp_string
+            tmp_string += ' with condition {}, {}, {}'.format(tables[0], tables[1], root.info['Join Filter'])
+        return tables[0], tmp_string
 
     elif root.op == 'Merge Join':
         tmp_string = 'Perform merge join on tables {} and {}'.format(tables[0], tables[1])
@@ -244,7 +244,7 @@ def dfs(root, result):
             tmp_string += ' with filter {}'.format(root.info['Filter'])
         if 'Merge Cond' in root.info:
             tmp_string += ' with condition {}'.format(root.info['Merge Cond'])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'Sort':
         tmp_string = 'Perform sort operation on table {} with sort key {}'.format(tables[0], root.info['Sort Key'])
@@ -270,11 +270,11 @@ def dfs(root, result):
 
     elif root.op == 'MergeAppend':
         tmp_string = 'Merge results from table {} and {}'.format(tables[0], tables[1])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'SetOp':
         tmp_string = 'Perform set operation on table {}'.format(tables[0])
-        return tables, tmp_string
+        return tables[0], tmp_string
 
     elif root.op == 'Unique':
         table = ''

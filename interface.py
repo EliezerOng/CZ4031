@@ -5,7 +5,7 @@ import annotation as an
 from pptree import *
 
 plans = {}
-input_textbox = qep_box = aqp_box = None
+input_textbox = qep_box = aqp_box = annotation_box = None
 settings = pre.DEFAULT_PARAMS.copy()
 checkboxes = []
 aqp_mode = 'Single'
@@ -146,7 +146,7 @@ def create_annotation_frame(container):
     annotation_text = tk.Text(frame, width=135)
     annotation_text.grid(row=1)
 
-    return frame
+    return frame, annotation_text
 
 
 def update_settings(key, value):
@@ -198,6 +198,13 @@ def update_treeview(plan):
                 queue.append((cid, child))
 
 
+def get_annotation(annotations):
+    count = 1
+    for annotation in annotations:
+        annotation_box.insert(tk.END, 'Step {}: {} \n'.format(count, annotation))
+        count += 1
+
+
 def get_plans():
     query = input_textbox.get("1.0", "end-1c")
 
@@ -221,6 +228,7 @@ def get_plans():
     global selection
 
     update_treeview('QEP')
+    get_annotation(an.build_annotation(qep))
 
     if aqp_mode == 'Multiple' and len(aqp) > 0:
         selection['values'] = [str(i + 1) for i in range(len(plans['AQP']))]
@@ -245,7 +253,7 @@ def create_main_window():
     # window.columnconfigure(0, weight=1)
     # window.columnconfigure(1, weight=1)
 
-    global input_textbox, qep_box, aqp_box, checkboxes, selection
+    global input_textbox, qep_box, aqp_box, annotation_box, checkboxes, selection
 
     f1 = tk.Frame(window)
     f1.grid(row=0)
@@ -264,7 +272,7 @@ def create_main_window():
     aqp_frame, aqp_box, selection = create_aqp_frame(f2)
     aqp_frame.grid(column=1, row=0, padx=10)
 
-    annotation_frame = create_annotation_frame(window)
+    annotation_frame, annotation_box = create_annotation_frame(window)
     annotation_frame.grid(columnspan=2, row=2)
 
     # Example query
