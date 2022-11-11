@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import preprocessing as pre
+import annotation as an
 from pptree import *
 
 plans = {}

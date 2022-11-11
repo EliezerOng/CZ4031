@@ -202,6 +202,87 @@ def dfs(root, result):
         tmp_string = "Perform hash on table {}".format(tables[0])
         return tables[0], tmp_string
 
+    elif root.op == 'HashAggregate':
+        tmp_string = 'Perform hash aggregate operation on table {}'.format(tables[0])
+        return tables, tmp_string
+
+    elif root.op == 'Aggregate':
+        tmp_string = 'Perform aggregate on table {}'.format(tables[0])
+        return tables, tmp_string
+
+    elif root.op == 'Append':
+        tmp_string = 'Append results from table {} to table {}'.format(tables[0], tables[1])
+        return tables, tmp_string
+
+    elif root.op == 'Gather':
+        tmp_string = 'Perform gather operation on table {}'.format(tables[0])
+        return tables, tmp_string
+
+    elif root.op == 'Gather Merge':
+        tmp_string = 'Perform gather merge operation on result of previous operations'
+        return tables[0], tmp_string
+
+    elif root.op == 'GroupAggregate':
+        tmp_string = 'Perform group aggreagate operation on table {}'.format(tables[0])
+        return tables, tmp_string
+
     elif root.op == 'Hash Join':
         tmp_string = "Perform hash join on tables {} and {}".format(tables[0], tables[1])
         return tables, tmp_string
+
+    elif root.op == 'Nested Loop':
+        tmp_string = 'Perform nested loop join on tables {} and {}'.format(tables[0], tables[1])
+        if 'Filter' in root.info:
+            tmp_string += ' with filter {}'.format(root.info['Filter'])
+        if 'Join Filter' in root.info:
+            tmp_string += 'with condition {}, {}, {}'.format(tables[0], tables[1], root.info['Join Filter'])
+        return tables, tmp_string
+
+    elif root.op == 'Merge Join':
+        tmp_string = 'Perform merge join on tables {} and {}'.format(tables[0], tables[1])
+        if 'Filter' in root.info:
+            tmp_string += ' with filter {}'.format(root.info['Filter'])
+        if 'Merge Cond' in root.info:
+            tmp_string += ' with condition {}'.format(root.info['Merge Cond'])
+        return tables, tmp_string
+
+    elif root.op == 'Sort':
+        tmp_string = 'Perform sort operation on table {} with sort key {}'.format(tables[0], root.info['Sort Key'])
+        return tables[0], tmp_string
+
+    elif root.op == 'Incremental Sort':
+        tmp_string = 'Perform incremental sort operation on table {} with sort key {}'.format(tables[0],
+                                                                                              root.info['Sort Key'])
+        return tables[0], tmp_string
+
+    elif root.op == 'Limit':
+        tmp_string = 'Number of rows is limited from table {}'.format(tables[0])
+        return tables[0], tmp_string
+
+    elif root.op == 'Materialize':
+        tmp_string = 'Perform materialize operation on table {}'.format(tables[0])
+        return tables[0], tmp_string
+
+    elif root.op == 'ModifyTable':
+        table = root.info['Relation Name']
+        tmp_string = 'Modify table {}'.format(table)
+        return table, tmp_string
+
+    elif root.op == 'MergeAppend':
+        tmp_string = 'Merge results from table {} and {}'.format(tables[0], tables[1])
+        return tables, tmp_string
+
+    elif root.op == 'SetOp':
+        tmp_string = 'Perform set operation on table {}'.format(tables[0])
+        return tables, tmp_string
+
+    elif root.op == 'Unique':
+        table = ''
+        if 'Subplan Name' in root.info:
+            table = root.info['Subplan Name']
+        else:
+            table = tables[0]
+
+        tmp_string = 'Remove duplicates from table {}'.format(table)
+
+        return table, tmp_string
