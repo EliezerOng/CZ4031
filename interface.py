@@ -149,6 +149,39 @@ def create_annotation_frame(container):
     return frame, annotation_text
 
 
+def create_tree_frame(container):
+    global tree_canvas
+    frame = tk.Frame(container)
+
+    tree_label = tk.Label(frame, text='Tree Graph')
+    tree_label.grid(row=0, pady=5, sticky='w')
+
+    tree_canvas = tk.Canvas(frame, background='white', width=1100)
+    tree_canvas.grid(row=1, column=0)
+
+    tree_canvas.config(scrollregion=tree_canvas.bbox("all"))
+    scroll_bar = tk.Scrollbar(frame, orient='vertical', command=tree_canvas.yview)
+    scroll_bar.grid(row=1, column=1, sticky='ns')
+    tree_canvas.config(yscrollcommand=scroll_bar.set)
+
+    return frame
+
+
+def draw_node(node, x, y):
+    global tree_canvas
+
+    tree_canvas.create_rectangle(x, y, x + 50, y + 50)
+    tree_canvas.create_text(x + 25, y + 25, text=node.op)
+    tmp_x = x
+    tmp_y = y
+
+    if node.children:
+        for child in node.children:
+            tmp_x += 50
+            tmp_y += 60
+            draw_node(child, tmp_x, tmp_y)
+
+
 def update_settings(key, value):
     if value == 0:
         settings.update({key: "OFF"})
@@ -199,8 +232,7 @@ def update_treeview(plan):
 
 
 def get_annotation(annotations):
-    annotation_box.delete("1.0", "end")
-
+    annotation_box.delete(1.0, tk.END)
     count = 1
     total_cost = f"Total cost for this plan {annotations.pop()}."
 
@@ -234,6 +266,7 @@ def get_plans():
 
     update_treeview('QEP')
     get_annotation(an.build_annotation(qep))
+    draw_node(qep, 500, 10)
 
     if aqp_mode == 'Multiple' and len(aqp) > 0:
         selection['values'] = [str(i + 1) for i in range(len(plans['AQP']))]
@@ -264,6 +297,10 @@ def create_main_window():
     f1.grid(row=0)
     f2 = tk.Frame(window)
     f2.grid(row=1)
+    f3 = tk.Frame(window)
+    f3.grid(row=2)
+    f4 = tk.Frame(window)
+    f4.grid(row=3)
 
     input_frame, input_textbox = create_input_frame(f1)
     input_frame.grid(column=0, row=0, padx=10)
@@ -277,8 +314,12 @@ def create_main_window():
     aqp_frame, aqp_box, selection = create_aqp_frame(f2)
     aqp_frame.grid(column=1, row=0, padx=10)
 
-    annotation_frame, annotation_box = create_annotation_frame(window)
-    annotation_frame.grid(columnspan=2, row=2)
+    annotation_frame, annotation_box = create_annotation_frame(f3)
+    annotation_frame.grid(column=0, row=0, padx=10)
+
+    tree_frame = create_tree_frame(f4)
+    tree_frame.grid(column=1, row=0, padx=10)
+    # tree_canvas.configure(scrollregion=tree_canvas.bbox('all'))
 
     # Example query
     input_textbox.insert(tk.END, ("select\n"
