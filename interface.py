@@ -199,10 +199,15 @@ def update_treeview(plan):
 
 
 def get_annotation(annotations):
+    annotation_box.delete("1.0", "end")
+
     count = 1
+    total_cost = f"Total cost for this plan {annotations.pop()}."
+
     for annotation in annotations:
         annotation_box.insert(tk.END, 'Step {}: {} \n'.format(count, annotation))
         count += 1
+    annotation_box.insert(tk.END, total_cost)
 
 
 def get_plans():

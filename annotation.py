@@ -122,6 +122,8 @@ def build_annotation(root):
 
     # print(root.info)
 
+    result.append(root.total_cost)
+
     return result
 
 
