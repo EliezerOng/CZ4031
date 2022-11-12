@@ -36,6 +36,7 @@ class Node:
         self.cost = plan_dict['Total Cost']
         self.children = self.set_children()
         self.trace = None
+        self.total_cost = None
 
     def set_children(self):
         if 'Plans' not in self.info:
@@ -58,6 +59,7 @@ class Node:
 
 
 def build_tree(plan):
+    cost = 0
     root = Node(plan['Plan'])
 
     tree = []
@@ -65,6 +67,15 @@ def build_tree(plan):
 
     while queue:
         parent = queue.pop(0)
+        if "Scan" in parent.info['Node Type']:
+            print(parent.info['Node Type'] + " in " + parent.info['Relation Name'])
+            print("Cost of this operation: " + str(parent.cost))
+        else:
+            print(parent.info['Node Type'])
+            print("Cost of this operation: " + str(parent.cost))
+
+        cost += parent.cost
+
         if parent.children:
             for child in parent.children:
                 queue.append(child)
@@ -72,7 +83,8 @@ def build_tree(plan):
 
     root.set_trace(tree)
     # print(root.trace)
-
+    root.total_cost = cost
+    #print("Total cost for this plan: " + str(cost))
     return root
 
 
