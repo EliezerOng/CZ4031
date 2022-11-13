@@ -143,7 +143,7 @@ def create_annotation_frame(container):
     annotation_label = tk.Label(frame, text='Annotations')
     # .grid(column=0, row=0)
     annotation_label.grid(row=0, pady=5, sticky='w')
-    annotation_text = tk.Text(frame, width=135, height=10)
+    annotation_text = tk.Text(frame, width=135, height=25)
     annotation_text.grid(row=1)
 
     return frame, annotation_text
@@ -156,7 +156,7 @@ def create_tree_frame(container):
     tree_label = tk.Label(frame, text='Tree Graph')
     tree_label.grid(row=0, pady=5, sticky='w')
 
-    tree_canvas = tk.Canvas(frame, background='white', width=1100)
+    tree_canvas = tk.Canvas(frame, background='white', width=1100, scrollregion=(0, 0, 2000, 2000))
     tree_canvas.grid(row=1, column=0)
 
     tree_canvas.config(scrollregion=tree_canvas.bbox("all"))
@@ -315,7 +315,7 @@ def get_plans():
     update_treeview('QEP')
     get_annotation(an.build_annotation(qep))
     bbox = draw_node(qep, 12, 12)
-    tree_canvas.configure(width=bbox[2] - bbox[0] + 24, height=bbox[3] - bbox[1] + 24)
+    tree_canvas.configure(width=bbox[2] - bbox[0] + 22, height=bbox[3] - bbox[1] + 22)
 
     if aqp_mode == 'Multiple' and len(aqp) > 0:
         selection['values'] = [str(i + 1) for i in range(len(plans['AQP']))]
