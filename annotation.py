@@ -178,6 +178,11 @@ def dfs(root, result):
         tmp_string = 'Remove duplicates from table {}'.format(table)
 
         return table, tmp_string
+
+    else:
+        tmp_string = 'Perform {} operation from table {}'.format(root.op, tables[0])
+
+        return tables[0], tmp_string
     else:
         tmp_string = 'Perform {} operation'.format(root.op)
         return 'Unknown', tmp_string
