@@ -183,9 +183,6 @@ def dfs(root, result):
         tmp_string = 'Perform {} operation from table {}'.format(root.op, tables[0])
 
         return tables[0], tmp_string
-    else:
-        tmp_string = 'Perform {} operation'.format(root.op)
-        return 'Unknown', tmp_string
 
 
 def build_explanation(qep: pre.Node, aqp: pre.Node):
