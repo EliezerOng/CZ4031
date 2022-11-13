@@ -184,12 +184,12 @@ def dfs(root, result):
 
 
 def build_explanation(qep: pre.Node, aqp: pre.Node):
-    if qep.trace == aqp.trace:
-        print("Plans do not show significant differences.")
-        return
-
     scans = []
     joins = []
+
+    if qep.trace == aqp.trace:
+        print("Plans do not show significant differences.")
+        return scans, joins
 
     scan_diff, join_diff, indexes = pre.compare(qep, aqp)
     for diff in scan_diff:
@@ -214,8 +214,13 @@ def explain_scan(a: pre.Node, b: pre.Node):
 
     # Seq scan better than other scans
     elif a.op == "Seq Scan" and b.op != "Seq Scan":
+        print(f"a.info = {a.info}")
+        if 'Filter' in a.info:
+            filter_cond = a.info['Filter']
+        else:
+            filter_cond = ""
         explanation += f"Sequential Scan is done on {a.tables} instead of {b.op} because the selectivity of " \
-                       f"predicate {a.info['Filter']} is high. "
+                       f"predicate {filter_cond} is high. "
 
         if a.tables == 'region':
             explanation += f"The region table is also small, with only 5 rows. "
@@ -259,7 +264,9 @@ def explain_joins(a: pre.Node, b: pre.Node, indexes):
 
     if a.op == "Hash Join":
         explanation += f"Hash Join performed after {input1.op} and {input2.op} is a more efficient join than {b.op}. "
-        left, right = a.info['Hash Cond'][1:-1].split(' = ')
+        to_replace = r"(>)|(<)|(<=)|(>=)"
+        inner = re.sub(to_replace, "=", a.info['Hash Cond'][1:-1])
+        left, right = inner.split(' = ')
         print(f"In Hash Join explain: left = {left}, right = {right}, indexes = {indexes}")
         if left not in indexes and right not in indexes:
             explanation += f"This is because both inputs are not sorted by the join keys in predicate {a.info['Hash Cond']}. "

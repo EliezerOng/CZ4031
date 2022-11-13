@@ -1,3 +1,5 @@
+import re
+
 import psycopg2
 import itertools
 
@@ -302,12 +304,14 @@ def compare(qep: Node, aqp: Node):
 
 
 def retrieve_index(node_info):
+    pattern = r"(>)|(<)|(<=)|(>=)"
     if 'Index Name' in node_info:
         relation, idx_key = node_info['Index Name'].split('_')
         print(f"relation = {relation}")
 
         if 'Index Cond' in node_info:
             inner = node_info['Index Cond'][1:-1]
+            inner = re.sub(pattern, "=", inner)
             left, right = inner.split(' = ')
             print(f"left = {left}, right = {right}")
             r1, k1 = left.split('.')
@@ -323,8 +327,10 @@ def retrieve_index(node_info):
             elif r2 == relation or relation in r2:
                 return right
 
-        if 'Recheck Cond' in node_info:
+        elif 'Recheck Cond' in node_info:
             inner = node_info['Recheck Cond'][1:-1]
+            inner = re.sub(pattern, "=", inner)
+            print(f"inner = {inner}")
             left, right = inner.split(' = ')
             print(f"left = {left}, right = {right}")
             r1, k1 = left.split('.')
@@ -339,8 +345,10 @@ def retrieve_index(node_info):
                 return left
             elif r2 == relation or relation in r2:
                 return right
-        if 'Filter' in node_info:
+        elif 'Filter' in node_info:
             inner = node_info['Filter'][1:-1]
+            inner = re.sub(pattern, "=", inner)
+            print(f"inner = {inner}")
             left, right = inner.split(' = ')
             print(f"left = {left}, right = {right}")
             r1, k1 = left.split('.')
