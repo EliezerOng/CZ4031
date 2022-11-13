@@ -170,16 +170,34 @@ def create_tree_frame(container):
 def draw_node(node, x, y):
     global tree_canvas
 
-    tree_canvas.create_rectangle(x, y, x + 50, y + 50)
-    tree_canvas.create_text(x + 25, y + 25, text=node.op)
-    tmp_x = x
-    tmp_y = y
+    child_x = x
+    left = x
+    right = -1
+    top = y
+    bottom = -1
 
-    if node.children:
-        for child in node.children:
-            tmp_x += 50
-            tmp_y += 60
-            draw_node(child, tmp_x, tmp_y)
+    button = tk.Button(tree_canvas, text=node.op, padx=10, bg='blue', fg='white', anchor='center')
+    rectangle_window = tree_canvas.create_window((x, y), window=button, anchor='nw', tags='rect')
+
+    bbox = tree_canvas.bbox(rectangle_window)
+    child_bboxes = []
+
+    if len(node.children) == 0:
+        return bbox
+    for child in node.children:
+        child_bbox = draw_node(child, child_x, y + 60)
+        child_x = child_bbox[2] + 20
+        right = max(right, child_bbox[2])
+        bottom = max(bottom, child_bbox[3])
+        child_bboxes.append(child_bbox)
+    x_mid = (left + right) // 2
+    bbox_mid_x = (bbox[0] + bbox[2]) // 2
+    tree_canvas.move(rectangle_window, x_mid - bbox_mid_x, 0)
+
+    for child_bbox in child_bboxes:
+        child_mid_x = (child_bbox[0] + child_bbox[2]) // 2
+        tree_canvas.create_line(x_mid, bbox[3], child_mid_x, child_bbox[1], width=3, arrow=tk.FIRST)
+    return left, top, right, bottom
 
 
 def update_settings(key, value):
@@ -243,6 +261,7 @@ def get_annotation(annotations):
 
 
 def get_plans():
+    global tree_canvas
     query = input_textbox.get("1.0", "end-1c")
 
     if query == "" or not query:
@@ -266,7 +285,8 @@ def get_plans():
 
     update_treeview('QEP')
     get_annotation(an.build_annotation(qep))
-    draw_node(qep, 500, 10)
+    bbox = draw_node(qep, 12, 12)
+    tree_canvas.configure(width=bbox[2] - bbox[0] + 24, height=bbox[3] - bbox[1] + 24)
 
     if aqp_mode == 'Multiple' and len(aqp) > 0:
         selection['values'] = [str(i + 1) for i in range(len(plans['AQP']))]
@@ -319,7 +339,7 @@ def create_main_window():
 
     tree_frame = create_tree_frame(f4)
     tree_frame.grid(column=1, row=0, padx=10)
-    # tree_canvas.configure(scrollregion=tree_canvas.bbox('all'))
+    tree_canvas.configure(scrollregion=tree_canvas.bbox('all'))
 
     # Example query
     input_textbox.insert(tk.END, ("select\n"

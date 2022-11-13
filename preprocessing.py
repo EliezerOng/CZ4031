@@ -40,7 +40,7 @@ class Node:
 
     def set_children(self):
         if 'Plans' not in self.info:
-            return None
+            return []
         else:
             plans = self.info.get('Plans')
 
@@ -84,7 +84,7 @@ def build_tree(plan):
     root.set_trace(tree)
     # print(root.trace)
     root.total_cost = cost
-    #print("Total cost for this plan: " + str(cost))
+    # print("Total cost for this plan: " + str(cost))
     return root
 
 
