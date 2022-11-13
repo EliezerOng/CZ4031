@@ -84,7 +84,7 @@ def create_treeview(container):
     tree.column('total_cost', width=130)
     # tree.column('output', width=300)
     tree.heading('#0', text='Operator')
-    tree.heading('total_cost', text='Total Cost')
+    tree.heading('total_cost', text='Cost')
     # tree.heading('output', text='Output')
 
     return tree
@@ -143,7 +143,7 @@ def create_annotation_frame(container):
     annotation_label = tk.Label(frame, text='Annotations')
     # .grid(column=0, row=0)
     annotation_label.grid(row=0, pady=5, sticky='w')
-    annotation_text = tk.Text(frame, width=135)
+    annotation_text = tk.Text(frame, width=135, height=10)
     annotation_text.grid(row=1)
 
     return frame, annotation_text
@@ -214,9 +214,11 @@ def update_treeview(plan):
     elif plan == 'AQP':
         box = aqp_box
         root = plans['AQP']
+        get_explanation(an.build_explanation(plans['QEP'], root))
     else:
         box = aqp_box
         root = plan
+        get_explanation(an.build_explanation(plans['QEP'], root))
 
     box.delete(*box.get_children())
 
@@ -229,6 +231,9 @@ def update_treeview(plan):
             for child in parent.children:
                 cid = box.insert(pid, 'end', text=child.op, values=child.cost, open=True)
                 queue.append((cid, child))
+        else:
+            parent.set_tables()
+            box.insert(pid, 'end', text=parent.tables[0], values=0, open=True)
 
 
 def get_annotation(annotations):
@@ -240,6 +245,23 @@ def get_annotation(annotations):
         annotation_box.insert(tk.END, 'Step {}: {} \n'.format(count, annotation))
         count += 1
     annotation_box.insert(tk.END, total_cost)
+
+
+def get_explanation(explanations):
+    # annotation_box.delete(1.0, tk.END)
+    scans, joins = explanations
+    count = 1
+    if len(scans) == 0 and len(joins) == 0:
+        annotation_box.insert(tk.END, '\nNo significant differences between the 2 plans shown\n')
+        return
+
+    annotation_box.insert(tk.END, '\n=========== Reasons why the QEP was chosen over this AQP ===========\n')
+    for scan in scans:
+        annotation_box.insert(tk.END, '{}: {} \n'.format(count, scan))
+        count += 1
+    for join in joins:
+        annotation_box.insert(tk.END, '{}: {} \n'.format(count, join))
+        count += 1
 
 
 def get_plans():
@@ -264,18 +286,23 @@ def get_plans():
 
     global selection
 
-    update_treeview('QEP')
+    qep_box.delete(*qep_box.get_children())
+
     get_annotation(an.build_annotation(qep))
+
+    update_treeview('QEP')
     draw_node(qep, 500, 10)
 
     if aqp_mode == 'Multiple' and len(aqp) > 0:
         selection['values'] = [str(i + 1) for i in range(len(plans['AQP']))]
-        print("here", aqp)
+        aqp_box.delete(*aqp_box.get_children())
         update_treeview(aqp[0])
     elif aqp_mode == 'Single':
         selection['values'] = ['1']
+        aqp_box.delete(*aqp_box.get_children())
         update_treeview('AQP')
     elif aqp_mode == 'Multiple' and len(aqp) == 0:
+        aqp_box.delete(*aqp_box.get_children())
         selection['values'] = ['No distinct plan to display']
 
     selection.current(0)
