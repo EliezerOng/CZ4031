@@ -170,33 +170,33 @@ def create_tree_frame(container):
 def draw_node(node, x, y):
     global tree_canvas
 
-    child_x = x
+    child_node_x = x
     left = x
     right = -1
     top = y
     bottom = -1
 
-    button = tk.Button(tree_canvas, text=node.op, padx=10, bg='blue', fg='white', anchor='center')
-    rectangle_window = tree_canvas.create_window((x, y), window=button, anchor='nw', tags='rect')
+    node_op = tk.Button(tree_canvas, text=node.op, padx=10, bg='blue', fg='white', anchor='center')
+    rectangle_window = tree_canvas.create_window((x, y), window=node_op, anchor='nw', tags='rect')
 
     bbox = tree_canvas.bbox(rectangle_window)
-    child_bboxes = []
+    child_node_bboxes = []
 
     if len(node.children) == 0:
         return bbox
     for child in node.children:
-        child_bbox = draw_node(child, child_x, y + 60)
-        child_x = child_bbox[2] + 20
-        right = max(right, child_bbox[2])
-        bottom = max(bottom, child_bbox[3])
-        child_bboxes.append(child_bbox)
-    x_mid = (left + right) // 2
-    bbox_mid_x = (bbox[0] + bbox[2]) // 2
-    tree_canvas.move(rectangle_window, x_mid - bbox_mid_x, 0)
+        child_node_bbox = draw_node(child, child_node_x, y + 60)
+        child_node_x = child_node_bbox[2] + 20
+        right = max(right, child_node_bbox[2])
+        bottom = max(bottom, child_node_bbox[3])
+        child_node_bboxes.append(child_node_bbox)
+    mid = (left + right) // 2
+    bbox_mid = (bbox[0] + bbox[2]) // 2
+    tree_canvas.move(rectangle_window, mid - bbox_mid, 0)
 
-    for child_bbox in child_bboxes:
-        child_mid_x = (child_bbox[0] + child_bbox[2]) // 2
-        tree_canvas.create_line(x_mid, bbox[3], child_mid_x, child_bbox[1], width=3, arrow=tk.FIRST)
+    for child_node_bbox in child_node_bboxes:
+        child_mid_x = (child_node_bbox[0] + child_node_bbox[2]) // 2
+        tree_canvas.create_line(mid, bbox[3], child_mid_x, child_node_bbox[1], width=3, arrow=tk.FIRST)
     return left, top, right, bottom
 
 
